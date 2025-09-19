@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, maximum-scale=5.0, shrink-to-fit=no" />
+  <title>Heroes Database - Pahlawan Nasional Indonesia</title>
+  <style>
+    /* Reset & Global */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    img, video {
+      max-width: 100%;
+      height: auto;
+    }
+
+    :root {
+      --primary-color: #dc2626;
+      --secondary-color: #1f2937;
+      --accent-color: #fbbf24;
+      --background-dark: #0f172a;
+      --background-light: #1e293b;
+      --text-primary: #ffffff;
+      --text-secondary: #cbd5e1;
+      --card-bg: rgba(255, 255, 255, 0.08);
+      --backdrop-blur: blur(20px);
+      --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.3);
+      --shadow-xl: 0 25px 50px rgba(0, 0, 0, 0.5);
+      --border-radius: 16px;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --red-gradient: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+      --gold-gradient: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, var(--background-dark) 0%, var(--background-light) 100%);
+      min-height: 100vh;
+      color: var(--text-primary);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Animated background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 20% 80%, rgba(220, 38, 38, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(251, 191, 36, 0.1) 0%, transparent 50%);
+      animation: float 20s ease-in-out infinite;
+      z-index: -1;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(2deg); }
+    }
+
+    /* Header Styles */
+    .heroes-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: var(--backdrop-blur);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      animation: slideDown 0.8s ease-out;
+    }
+
+    @keyframes slideDown {
+      from { transform: translateY(-100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .heroes-header__container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .heroes-header__logo {
+      font-size: 1.6rem;
+      font-weight: 700;
+      background: var(--red-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--red-gradient);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 15px rgba(220, 38, 38, 0.3);
+    }
+
+    .logo-icon svg {
+      width: 16px;
+      height: 16px;
+      fill: white;
+    }
+
+    /* Search Bar */
+    .search-container {
+      position: relative;
+      max-width: 400px;
+      width: 100%;
+      margin-left: auto;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 0.75rem 1rem 0.75rem 2.5rem;
+      background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--border-radius);
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      transition: var(--transition);
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+    }
+
+    .search-input::placeholder {
+      color: var(--text-secondary);
+    }
+
+    input[type="search"]::-webkit-search-cancel-button {
+      -webkit-appearance: none;
+      appearance: none;
+      display: none;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 18px;
+      height: 18px;
+      fill: var(--text-secondary);
+      pointer-events: none;
+    }
+
+    /* Main Content */
+    .main-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+      animation: fadeInUp 1s ease-out 0.3s both;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Hero Section */
+    .hero-section {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding: 2rem 0;
+    }
+
+    .hero-title {
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 900;
+      background: var(--red-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1rem;
+      line-height: 1.1;
+      text-shadow: 0 0 40px rgba(220, 38, 38, 0.3);
+    }
+
+    .hero-subtitle {
+      font-size: 1.2rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      background: var(--gold-gradient);
+      color: var(--background-dark);
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-top: 1.5rem;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    /* Heroes Grid */
+    .heroes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .hero-card {
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+      transition: var(--transition);
+      cursor: pointer;
+      position: relative;
+      transform: translateY(0);
+    }
+
+    .hero-card:hover {
+      transform: translateY(-8px);
+      box-shadow: var(--shadow-xl);
+      border-color: rgba(220, 38, 38, 0.3);
+    }
+
+    .hero-card__image {
+      width: 100%;
+      height: 250px;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+      background-color: var(--background-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+      font-size: 3rem;
+    }
+
+    .hero-card__content {
+      padding: 1.5rem;
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .hero-card__name {
+      font-size: 1.3rem;
+      font-weight: 700;
+      background: var(--red-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+    }
+
+    .hero-card__period {
+      font-size: 0.9rem;
+      color: var(--accent-color);
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+    }
+
+    .hero-card__description {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 1rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .hero-tag {
+      padding: 0.3rem 0.75rem;
+      background: rgba(220, 38, 38, 0.2);
+      border: 1px solid rgba(220, 38, 38, 0.3);
+      border-radius: 50px;
+      font-size: 0.8rem;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    /* No Results */
+    .no-results {
+      text-align: center;
+      padding: 3rem 2rem;
+      color: var(--text-secondary);
+    }
+
+    .no-results h3 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+    }
+
+    /* Modal */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: var(--backdrop-blur);
+    }
+
+    .modal.hidden {
+      display: none;
+    }
+
+    .modal__backdrop {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .modal__content {
+      position: relative;
+      width: 90%;
+      max-width: 800px;
+      max-height: 80vh;
+      background: var(--background-dark);
+      border-radius: var(--border-radius);
+      overflow-y: auto;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: var(--shadow-xl);
+    }
+
+    .modal__close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      width: 40px;
+      height: 40px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: var(--backdrop-blur);
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: var(--transition);
+      z-index: 1001;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-primary);
+      font-size: 1.5rem;
+    }
+
+    .modal__close::before {
+      content: '×';
+    }
+
+    .modal__close:hover {
+      background: var(--primary-color);
+      transform: scale(1.1);
+    }
+
+    .modal__hero-image {
+      width: 100%;
+      background-color: var(--background-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .modal__hero-image img {
+      max-width: 100%;
+      height: auto;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .modal__hero-content {
+      padding: 2rem;
+    }
+
+    .modal__hero-name {
+      font-size: 2rem;
+      font-weight: 700;
+      background: var(--red-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1rem;
+    }
+
+    .modal__hero-period {
+      font-size: 1.1rem;
+      color: var(--accent-color);
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+
+    .modal__hero-description {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 2rem;
+      white-space: pre-line;
+      overflow: visible;
+      display: block;
+    }
+
+    .modal__hero-details {
+      font-size: 1rem;
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    /* Add Hero Form */
+    .add-hero-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding: 2rem;
+    }
+
+    .add-hero-form label {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .add-hero-form input,
+    .add-hero-form textarea {
+      width: 100%;
+      padding: 0.75rem;
+      background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--border-radius);
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      transition: var(--transition);
+    }
+
+    .add-hero-form input:focus,
+    .add-hero-form textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+    }
+
+    .add-hero-form textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .add-hero-form button {
+      padding: 0.75rem 1.5rem;
+      background: var(--red-gradient);
+      color: var(--text-primary);
+      border: none;
+      border-radius: var(--border-radius);
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .add-hero-form button:hover {
+      background: var(--primary-color);
+      transform: scale(1.05);
+    }
+
+    /* Delete Button */
+    .delete-button {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: rgba(220, 38, 38, 0.8);
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      color: var(--text-primary);
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .delete-button:hover {
+      background: var(--primary-color);
+      transform: scale(1.1);
+    }
+
+    /* Footer */
+    .heroes-footer {
+      background: rgba(15, 23, 42, 0.9);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      margin-top: 4rem;
+    }
+
+    .heroes-footer__container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+      text-align: center;
+    }
+
+    .heroes-footer__text {
+      font-size: 0.9rem;
+      font-weight: 500;
+      background: linear-gradient(135deg, var(--text-secondary), var(--text-primary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .heroes-footer__highlight {
+      color: var(--accent-color);
+      font-weight: 700;
+    }
+
+    /* Loading Animation */
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 3rem;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(220, 38, 38, 0.2);
+      border-top: 4px solid var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .heroes-header__container {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .heroes-header__logo { font-size: 1.4rem; }
+      .search-container { width: 100%; margin-left: 0; }
+      .heroes-footer__text { font-size: 0.8rem; }
+      .modal__content {
+        width: 95%;
+        max-height: 90vh;
+      }
+      .modal__hero-content {
+        padding: 1.5rem;
+      }
+      .modal__hero-name {
+        font-size: 1.6rem;
+      }
+      .add-hero-form {
+        padding: 1.5rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .heroes-header__logo { font-size: 1.2rem; }
+      .heroes-footer__text { font-size: 0.75rem; }
+      .heroes-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+      .modal__hero-content {
+        padding: 1rem;
+      }
+      .modal__hero-name {
+        font-size: 1.4rem;
+      }
+      .add-hero-form {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="heroes-header">
+    <div class="heroes-header__container">
+      <div class="heroes-header__logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2l2.09 6.26L20 9.27l-5.91.81L12 22l-2.09-11.92L4 9.27l5.91.81z"/>
+          </svg>
+        </div>
+        PorensApp-HeroesDatabase
+      </div>
+      <div class="search-container">
+        <svg class="search-icon" viewBox="0 0 24 24">
+          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+        <input type="search" class="search-input" id="searchInput" placeholder="Cari pahlawan nasional...">
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <h1 class="hero-title">Pahlawan Nasional Indonesia</h1>
+      <p class="hero-subtitle">
+        Mengenal lebih dekat para pejuang yang telah berjasa mempertahankan dan membangun negara Republik Indonesia
+      </p>
+      <div class="hero-badge">🇮🇩 Database Lengkap Pahlawan Indonesia - By Porens</div>
+      <button onclick="showAddHeroForm()" class="add-hero-button" style="margin-top: 1.5rem; padding: 0.75rem 1.5rem; background: var(--red-gradient); color: var(--text-primary); border: none; border-radius: var(--border-radius); font-weight: 600; cursor: pointer; transition: var(--transition);">Tambah Pahlawan Baru</button>
+    </div>
+
+    <!-- Heroes Grid -->
+    <div class="heroes-grid" id="heroes-grid-container">
+      <div class="loading">
+        <div class="loading-spinner"></div>
+      </div>
+    </div>
+    
+    <div class="no-results" id="noResults" style="display: none;">
+      <h3>Tidak ada pahlawan yang ditemukan</h3>
+      <p>Coba gunakan kata kunci lain untuk pencarian</p>
+    </div>
+  </main>
+
+  <footer class="heroes-footer">
+    <div class="heroes-footer__container">
+      <div class="heroes-footer__text">
+        <span class="heroes-footer__highlight">Heroes Database</span> 2025 - Mengenang Jasa Para Pahlawan <span class="heroes-footer__highlight">Indonesia By Porens</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modal Detail -->
+  <div id="hero-modal" class="modal hidden">
+    <div class="modal__backdrop" onclick="closeHeroDetail()"></div>
+    <div class="modal__content">
+      <button class="modal__close" onclick="closeHeroDetail()" aria-label="Tutup detail"></button>
+      <div class="modal__hero-image" id="modal-hero-image"></div>
+      <div class="modal__hero-content">
+        <h2 class="modal__hero-name" id="modal-hero-name"></h2>
+        <div class="modal__hero-period" id="modal-hero-period"></div>
+        <div class="modal__hero-description" id="modal-hero-description"></div>
+        <div class="modal__hero-details" id="modal-hero-details"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Add Hero -->
+  <div id="add-hero-modal" class="modal hidden">
+    <div class="modal__backdrop" onclick="closeAddHeroForm()"></div>
+    <div class="modal__content">
+      <button class="modal__close" onclick="closeAddHeroForm()" aria-label="Tutup form"></button>
+      <div class="modal__hero-content">
+        <h2 class="modal__hero-name">Tambah Pahlawan Baru</h2>
+        <form class="add-hero-form" id="add-hero-form">
+          <label for="name">Nama</label>
+          <input type="text" id="name" name="name" required>
+          <label for="photo_url">URL Foto</label>
+          <input type="url" id="photo_url" name="photo_url">
+          <label for="birth_date">Tanggal Lahir</label>
+          <input type="text" id="birth_date" name="birth_date" placeholder="Contoh: 3 Juli 1883">
+          <label for="birth_place">Tempat Lahir</label>
+          <input type="text" id="birth_place" name="birth_place">
+          <label for="death_date">Tanggal Wafat</label>
+          <input type="text" id="death_date" name="death_date" placeholder="Contoh: 17 Juni 1959">
+          <label for="death_place">Tempat Wafat</label>
+          <input type="text" id="death_place" name="death_place">
+          <label for="burial_place">Tempat Dimakamkan</label>
+          <input type="text" id="burial_place" name="burial_place">
+          <label for="ascencion_document_number">Nomor Dokumen Pengangkatan</label>
+          <input type="text" id="ascencion_document_number" name="ascencion_document_number">
+          <label for="ascencion_document_date">Tanggal Dokumen</label>
+          <input type="text" id="ascencion_document_date" name="ascencion_document_date" placeholder="Contoh: 30 Agustus 1959">
+          <label for="ascencion_year">Tahun Pengangkatan</label>
+          <input type="number" id="ascencion_year" name="ascencion_year">
+          <label for="description">Deskripsi</label>
+          <textarea id="description" name="description" required></textarea>
+          <button type="submit">Simpan Pahlawan</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Load heroes data from Flask
+    const heroesData = {{ heroes | tojson | safe }};
+    let allHeroes = [...heroesData];
+    let filteredHeroes = [...heroesData];
+
+    // DOM
+    const heroesGridContainer = document.getElementById('heroes-grid-container');
+    const searchInput = document.getElementById('searchInput');
+    const noResults = document.getElementById('noResults');
+    const heroModal = document.getElementById('hero-modal');
+    const addHeroModal = document.getElementById('add-hero-modal');
+    const addHeroForm = document.getElementById('add-hero-form');
+
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(() => {
+        renderHeroes(allHeroes);
+      }, 500);
+      setupSearch();
+      setupAddHeroForm();
+    });
+
+    // Render heroes
+    function renderHeroes(heroes) {
+      if (heroes.length === 0) {
+        heroesGridContainer.innerHTML = '';
+        noResults.style.display = 'block';
+        return;
+      }
+
+      noResults.style.display = 'none';
+
+      const heroesHTML = heroes.map((hero, index) => `
+        <div class="hero-card">
+          <div class="hero-card__image" style="background-image: url(${hero.photo_url || ''})" onclick="showHeroDetail(${index})"></div>
+          <button class="delete-button" onclick="deleteHero(${index})" title="Hapus ${hero.name}">🗑️</button>
+          <div class="hero-card__content" onclick="showHeroDetail(${index})">
+            <h3 class="hero-card__name">${hero.name}</h3>
+            <div class="hero-card__period">${hero.birth_date || ''} - ${hero.death_date || ''}</div>
+            <p class="hero-card__description">${hero.description || ''}</p>
+          </div>
+        </div>
+      `).join('');
+
+      heroesGridContainer.innerHTML = heroesHTML;
+    }
+
+    // Search
+    function setupSearch() {
+      searchInput.addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase().trim();
+        filteredHeroes = searchTerm === '' ? [...allHeroes] : allHeroes.filter(hero =>
+          hero.name.toLowerCase().includes(searchTerm) ||
+          (hero.description || '').toLowerCase().includes(searchTerm) ||
+          (hero.birth_place || '').toLowerCase().includes(searchTerm) ||
+          (hero.death_place || '').toLowerCase().includes(searchTerm)
+        );
+        renderHeroes(filteredHeroes);
+      });
+    }
+
+    // Modal detail
+    function showHeroDetail(index) {
+      const hero = allHeroes[index];
+      if (!hero) return;
+
+      document.getElementById('modal-hero-name').textContent = hero.name;
+      document.getElementById('modal-hero-period').textContent = `${hero.birth_date || ''} - ${hero.death_date || ''}`;
+      document.getElementById('modal-hero-description').innerText = hero.description || '';
+
+      document.getElementById('modal-hero-details').innerHTML = `
+        <p><strong>Nomor Dokumen Pengangkatan:</strong> ${hero.ascencion_document_number || ''}</p>
+        <p><strong>Tanggal Dokumen:</strong> ${hero.ascencion_document_date || ''}</p>
+        <p><strong>Tahun Pengangkatan:</strong> ${hero.ascencion_year || ''}</p>
+        <p><strong>Tempat Lahir:</strong> ${hero.birth_place || ''}</p>
+        <p><strong>Tempat Wafat:</strong> ${hero.death_place || ''}</p>
+        <p><strong>Tempat Dimakamkan:</strong> ${hero.burial_place || ''}</p>
+      `;
+
+      const modalImage = document.getElementById('modal-hero-image');
+      modalImage.innerHTML = hero.photo_url 
+        ? `<img src="${hero.photo_url}" alt="${hero.name}">`
+        : `<div style="color: var(--text-secondary); font-size: 2rem;">🖼️</div>`;
+
+      heroModal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeHeroDetail() {
+      heroModal.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    // Add Hero Form
+    function showAddHeroForm() {
+      addHeroModal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeAddHeroForm() {
+      addHeroModal.classList.add('hidden');
+      document.body.style.overflow = '';
+      addHeroForm.reset();
+    }
+
+    function setupAddHeroForm() {
+      addHeroForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = new FormData(addHeroForm);
+        const newHero = {
+          name: formData.get('name'),
+          photo_url: formData.get('photo_url') || '',
+          birth_date: formData.get('birth_date') || '',
+          birth_place: formData.get('birth_place') || '',
+          death_date: formData.get('death_date') || '',
+          death_place: formData.get('death_place') || '',
+          burial_place: formData.get('burial_place') || '',
+          ascencion_document_number: formData.get('ascencion_document_number') || '',
+          ascencion_document_date: formData.get('ascencion_document_date') || '',
+          ascencion_year: formData.get('ascencion_year') ? parseInt(formData.get('ascencion_year')) : '',
+          description: formData.get('description')
+        };
+
+        try {
+          const response = await fetch('/add_hero', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newHero)
+          });
+          const result = await response.json();
+          if (result.status === 'success') {
+            allHeroes.push(result.hero);
+            filteredHeroes = [...allHeroes];
+            renderHeroes(filteredHeroes);
+            closeAddHeroForm();
+            alert('Pahlawan berhasil ditambahkan!');
+          } else {
+            alert('Gagal menambahkan pahlawan.');
+          }
+        } catch (error) {
+          console.error('Error adding hero:', error);
+          alert('Terjadi kesalahan saat menambahkan pahlawan.');
+        }
+      });
+    }
+
+    // Delete Hero
+    async function deleteHero(index) {
+      if (!confirm(`Apakah Anda yakin ingin menghapus ${allHeroes[index].name}?`)) return;
+
+      try {
+        const response = await fetch(`/delete_hero/${index}`, {
+          method: 'DELETE'
+        });
+        const result = await response.json();
+        if (result.status === 'success') {
+          allHeroes.splice(index, 1);
+          filteredHeroes = [...allHeroes];
+          renderHeroes(filteredHeroes);
+          alert('Pahlawan berhasil dihapus!');
+        } else {
+          alert('Gagal menghapus pahlawan: ' + result.message);
+        }
+      } catch (error) {
+        console.error('Error deleting hero:', error);
+        alert('Terjadi kesalahan saat menghapus pahlawan.');
+      }
+    }
+  </script>
+</body>
+</html>
