@@ -39,5 +39,15 @@ def delete_hero(index):
         return jsonify({'status': 'success', 'hero': deleted_hero})
     return jsonify({'status': 'error', 'message': 'Invalid index'}), 404
 
+# WSGI handler for Vercel
+def application(environ, start_response):
+    from io import StringIO
+    import sys
+    old_stdout = sys.stdout
+    sys.stdout = result = StringIO()
+    app(environ, start_response)
+    sys.stdout = old_stdout
+    return [result.getvalue().encode('utf-8')]
+
 if __name__ == '__main__':
     app.run(debug=True)
